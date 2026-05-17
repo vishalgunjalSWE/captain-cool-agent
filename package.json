@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Monorepo launcher for Captain Cool Multi-Agent System",
   "scripts": {
-    "start": "concurrently \"cd captain-cool-agent && node server.js\" \"cd captain-cool-ui && npm run dev\""
+    "start": "concurrently \"cd captain-cool-agent && node server.js\" \"cd captain-cool-ui && npm run dev\"",
+    "postinstall": "npm install --prefix captain-cool-agent && npm install --prefix captain-cool-ui"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
