@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { getWeatherAndDewProbability } from './tools.js';
 import { ANALYST_PROMPT, STRATEGIST_PROMPT, ADVOCATE_PROMPT, COMMENTATOR_PROMPT } from './prompts.js';
+import { Agent } from './adk.js'; // Import ADK wrapper
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import { performance } from 'perf_hooks';
@@ -8,6 +9,11 @@ import { performance } from 'perf_hooks';
 dotenv.config();
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// Define agents using ADK wrapper
+const strategistAgent = new Agent({ name: "Strategist", instruction: STRATEGIST_PROMPT, config: { responseMimeType: "application/json" } });
+const advocateAgent = new Agent({ name: "Advocate", instruction: ADVOCATE_PROMPT });
+const commentatorAgent = new Agent({ name: "Commentator", instruction: COMMENTATOR_PROMPT });
 
 const colors = {
   reset: "\x1b[0m",
@@ -130,15 +136,8 @@ async function runMatchSimulation() {
   console.log(`${colors.green}--> 2. STRATEGIST (Formulating Tactic Matrix)${colors.reset}`);
   const strategistPrompt = `Analyst's Report: ${analystFinalText}\nMatch State: ${JSON.stringify(matchState)}`;
   const { text: strategistJSON, latency: strategistLatency } = await trackExecution("Strategist", async () => {
-    const resp = await ai.models.generateContent({
-      model: modelName,
-      contents: strategistPrompt,
-      config: { 
-        systemInstruction: STRATEGIST_PROMPT,
-        responseMimeType: "application/json"
-      }
-    });
-    return { text: resp.text, usageMetadata: resp.usageMetadata };
+    const result = await strategistAgent.execute(ai, strategistPrompt);
+    return { text: result.text, usageMetadata: result.usageMetadata };
   });
   
   let strategistPlan = [];
@@ -155,12 +154,8 @@ async function runMatchSimulation() {
   console.log(`\n${colors.red}--> 3. ADVOCATE (Red Team Critique)${colors.reset}`);
   const advocatePrompt = `Strategist's Matrix: ${JSON.stringify(strategistPlan)}\nMatch State: ${JSON.stringify(matchState)}`;
   const { text: advocateCritique, latency: advocateLatency } = await trackExecution("Advocate", async () => {
-    const resp = await ai.models.generateContent({
-      model: modelName,
-      contents: advocatePrompt,
-      config: { systemInstruction: ADVOCATE_PROMPT }
-    });
-    return { text: resp.text, usageMetadata: resp.usageMetadata };
+    const result = await advocateAgent.execute(ai, advocatePrompt);
+    return { text: result.text, usageMetadata: result.usageMetadata };
   });
   console.log(`\n${colors.red}${colors.bold}ADVOCATE CRITIQUE [${advocateLatency}ms]:${colors.reset}\n${colors.red}${advocateCritique}${colors.reset}\n`);
 
@@ -168,16 +163,15 @@ async function runMatchSimulation() {
   console.log(`${colors.green}--> 4. STRATEGIST (Finalizing Strategy)${colors.reset}`);
   const strategistRevisedPrompt = `Original Matrix: ${JSON.stringify(strategistPlan)}\nAdvocate's Critique: ${advocateCritique}\nRevise the plan and output the final single tactical decision in plain text.`;
   const { text: finalPlan, latency: revisedLatency } = await trackExecution("Revised_Strategist", async () => {
-    const resp = await ai.models.generateContent({
-      model: modelName,
-      contents: [
-        { role: 'user', parts: [{ text: strategistPrompt }] },
-        { role: 'model', parts: [{ text: JSON.stringify(strategistPlan) }] },
-        { role: 'user', parts: [{ text: strategistRevisedPrompt }] }
-      ],
-      config: { systemInstruction: "You are MS Dhoni. Output the final tactical decision concisely in plain text." }
-    });
-    return { text: resp.text, usageMetadata: resp.usageMetadata };
+    const result = await new Agent({
+      name: "Revised_Strategist",
+      instruction: "You are MS Dhoni. Output the final tactical decision concisely in plain text."
+    }).execute(ai, [
+      { role: 'user', parts: [{ text: strategistPrompt }] },
+      { role: 'model', parts: [{ text: JSON.stringify(strategistPlan) }] },
+      { role: 'user', parts: [{ text: strategistRevisedPrompt }] }
+    ]);
+    return { text: result.text, usageMetadata: result.usageMetadata };
   });
   console.log(`\n${colors.green}${colors.bold}FINAL STRATEGY [${revisedLatency}ms]:${colors.reset}\n${colors.green}${finalPlan}${colors.reset}\n`);
 
@@ -185,12 +179,8 @@ async function runMatchSimulation() {
   console.log(`${colors.yellow}--> 5. COMMENTATOR (Broadcast)${colors.reset}`);
   const commentatorPrompt = `Final Strategy: ${finalPlan}`;
   const { text: commentatorResponse, latency: commentatorLatency } = await trackExecution("Commentator", async () => {
-    const resp = await ai.models.generateContent({
-      model: modelName,
-      contents: commentatorPrompt,
-      config: { systemInstruction: COMMENTATOR_PROMPT }
-    });
-    return { text: resp.text, usageMetadata: resp.usageMetadata };
+    const result = await commentatorAgent.execute(ai, commentatorPrompt);
+    return { text: result.text, usageMetadata: result.usageMetadata };
   });
   console.log(`\n${colors.yellow}${colors.bold}COMMENTARY [${commentatorLatency}ms]:${colors.reset}\n${colors.yellow}${commentatorResponse}${colors.reset}\n`);
   

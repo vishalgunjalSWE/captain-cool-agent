@@ -24,28 +24,33 @@ Instead of relying on heavy frameworks, I engineered a highly decoupled, sequent
 
 *(Insert Excalidraw Architecture Diagram here)*
 
-## The Core Loop (Code Snippet)
+## The Core Loop: Forced Adversarial Tension
 
-Here is how the prompts are structured to ensure each agent plays its specific role perfectly, with strict constraints to prevent hallucination and bloat:
+Here is how the prompts are structured to ensure each agent plays its specific role perfectly. Notice the strict constraints on word count and output format. 
+
+The secret sauce here is the **Devil's Advocate** prompt. By explicitly instructing it to **"NEVER agree with the Strategist"**, we force genuine friction. LLMs naturally converge toward agreement (consensus bias). This constraint breaks that pattern and forces a real debate.
 
 ```javascript
 // prompts.js
-export const ANALYST_PROMPT = `You are the Stats Analyst. Analyze the match state and the live weather data. Provide a concise summary of the conditions and key matchups. Keep your response under 75 words.`;
+export const ANALYST_PROMPT = `You are the Stats Analyst. Analyze the match state and the live weather data. Provide a concise summary of the conditions and key matchups. Keep your response under 50 words.`;
 
-export const STRATEGIST_PROMPT = `You are MS Dhoni, the Strategist. Read the Analyst's report. Propose a tactical decision for the next over (bowler selection, field placement). Be analytical but decisive. Keep your response under 75 words.`;
+export const STRATEGIST_PROMPT = `You are MS Dhoni, the Strategist. Read the Analyst's report. Propose a tactical decision matrix for the next over. You MUST output a valid JSON array of objects. Each object must have these exact keys: "Tactic" (string), "Bowler" (string), "Win_Prob" (string, e.g., "65%"), "Counterfactual_Risk" (string). Output NOTHING ELSE but the JSON array.`;
 
-export const ADVOCATE_PROMPT = `You are the Devil's Advocate, a critical data scientist. Read the Strategist's plan. Find the biggest risk or flaw in it based on the match state. Challenge the decision aggressively. Keep your response under 75 words.`;
+export const ADVOCATE_PROMPT = `You are the Devil's Advocate, a ruthless and critical data scientist. Read the Strategist's plan. You MUST disagree with it. Find the biggest risk or flaw in it based on the match state. Challenge the decision aggressively and propose a completely different angle. NEVER agree with the Strategist. Keep your response under 50 words.`;
 
-export const COMMENTATOR_PROMPT = `You are an IPL Commentator (like Harsha Bhogle or Ravi Shastri). Take the final agreed-upon strategy and explain it to the fans in exciting, easy-to-understand cricket jargon. Keep your response under 75 words.`;
+export const COMMENTATOR_PROMPT = `You are an IPL Commentator (like Harsha Bhogle or Ravi Shastri). Take the final agreed-upon strategy and explain it to the fans in exciting, easy-to-understand cricket jargon. Keep your response under 50 words.`;
 ```
 
-## The Execution & Observability
+## Execution, Observability & FinOps
 
-Running the CLI application produces a beautiful, text-based simulation where you can literally see the agents "thinking" and debating. But this isn't just `console.log`.
+Running the application produces a beautiful simulation where you can see the agents thinking and debating. But this isn't just a demo.
 
-I wrapped every Gemini call in `performance.now()` timers. At the end of every execution, the script saves an `audit_trace.json` file and renders an ELK-style execution trace. In real-world AI, tracking agent latency and token burn rate is critical.
+I wrapped every Gemini call in `performance.now()` timers and tracked token usage. At the end of every execution, the script saves an `audit_trace.json` file. 
 
-*(Insert CLI Terminal Screenshot here showing the `console.table()` matrix and audit trace)*
+**FinOps Insight:** We calculate the cost of each run. A full simulation across 5 agents costs approximately **$0.000333**. Running the entire IPL season (74 matches) would cost under $20. This makes a compelling case for AI-powered sports analytics at scale.
+
+*(Insert CLI Terminal Screenshot here showing the matrix and audit trace)*
+*(Insert Dashboard Screenshot here showing the live UI)*
 
 ## Containerized and Production-Ready
 

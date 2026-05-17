@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
-import { getWeatherAndDewProbability } from './tools.js';
+import { getWeatherAndDewProbability, scrapeCricbuzzMatchState } from './tools.js';
 import { ANALYST_PROMPT, STRATEGIST_PROMPT, ADVOCATE_PROMPT, COMMENTATOR_PROMPT } from './prompts.js';
 import dotenv from 'dotenv';
 import { performance } from 'perf_hooks';
@@ -162,6 +162,19 @@ app.get('/api/simulate/stream', async (req, res) => {
     sendEvent('error', { message: typeof payload === 'string' ? payload : JSON.stringify(payload) });
     res.end();
   }
+});
+
+// Endpoint for Cricbuzz scraping
+app.post('/api/scrape', async (req, res) => {
+  const { url } = req.body;
+  if (!url) {
+    return res.status(400).json({ error: "URL is required" });
+  }
+  const result = await scrapeCricbuzzMatchState(url);
+  if (result.error) {
+    return res.status(400).json(result);
+  }
+  res.json(result);
 });
 
 const PORT = process.env.PORT || 3001;

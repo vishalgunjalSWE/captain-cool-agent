@@ -253,6 +253,21 @@ The `NEVER agree` constraint on the Advocate is intentional and non-negotiable. 
 
 ---
 
+## Match Scenario Walkthrough
+
+Here is how the system handles a high-stakes scenario.
+
+**Scenario:** Over 19, chasing 185, score is 167/6 (18 needed off 12 balls). Two aggressive left-handed batsmen on strike. Only an inexperienced off-spinner and a part-time medium pacer remain.
+
+1. **Analyst** assessed the high humidity and calculated a 70% Dew Probability, advising against the spinner.
+2. **Strategist** proposed using the part-time medium pacer to avoid the spinner in the dew.
+3. **Devil's Advocate** challenged this, noting the medium pacer's poor record against left-handers.
+4. **Revised Strategist** decided to stick with the medium pacer but instructed a defensive wide-line field setting to mitigate the risk.
+
+*(Insert Screenshot of Dashboard showing the DAG and Terminal output for this scenario)*
+
+---
+
 ## What the Judges Cared About (And How We Did)
 
 The hackathon scored on four axes — 250 points each:
@@ -267,7 +282,7 @@ Five separate API calls. Real function calling. `responseMimeType: application/j
 The `NEVER agree` constraint. The counterfactual matrix with per-option win probabilities. Live FinOps cost metering in the dashboard. Context memory as a state machine. DAG pipeline visualizer.
 
 **Documentation & Blog** — Can someone understand it from the outside?  
-You're reading it.
+You're reading it. Read the detailed write-up on [dev.to](https://dev.to/yourusername/building-captain-cool-multi-agent-ipl-strategist-with-google-genai-...) or check out the [AI Studio Prompt Prototype](https://aistudio.google.com/...).
 
 ---
 
