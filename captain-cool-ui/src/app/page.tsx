@@ -43,7 +43,7 @@ export default function Dashboard() {
     addLog("Initializing SRE-Grade Match Simulation...", "info");
 
     try {
-      const url = new URL("http://localhost:3001/api/simulate/stream");
+      const url = new URL("https://captain-cool-agent-1.onrender.com/api/simulate/stream");
       url.searchParams.append("state", JSON.stringify(matchState));
       
       const eventSource = new EventSource(url.toString());
