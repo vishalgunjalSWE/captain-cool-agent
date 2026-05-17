@@ -1,0 +1,4 @@
+.env
+node_modules/
+match_state.json
+audit_trace.json
