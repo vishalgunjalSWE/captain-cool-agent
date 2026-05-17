@@ -47,6 +47,10 @@ app.get('/api/simulate/stream', async (req, res) => {
     'Connection': 'keep-alive'
   });
 
+  // Support "Bring Your Own Key" (BYOK) — use provided key or fall back to server default
+  const reqApiKey = req.query.apiKey || process.env.GEMINI_API_KEY;
+  const ai = new GoogleGenAI({ apiKey: reqApiKey });
+
   const sendEvent = (event, data) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };

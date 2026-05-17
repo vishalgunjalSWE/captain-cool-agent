@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [activePhase, setActivePhase] = useState<string | null>(null);
   const [logs, setLogs] = useState<{ id: string; text: string; time: string; type: string }[]>([]);
   const [totalCost, setTotalCost] = useState(0);
+  const [apiKey, setApiKey] = useState("");
   const [finalMatrix, setFinalMatrix] = useState<any[]>([]);
   const logsEndRef = useRef<HTMLDivElement>(null);
   
@@ -46,6 +47,9 @@ export default function Dashboard() {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
       const url = new URL(`${apiBase}/api/simulate/stream`);
       url.searchParams.append("state", JSON.stringify(matchState));
+      if (apiKey) {
+        url.searchParams.append("apiKey", apiKey);
+      }
       
       const eventSource = new EventSource(url.toString());
 
@@ -182,6 +186,19 @@ export default function Dashboard() {
                   <label className="text-zinc-400">Current</label>
                   <Input type="number" className="bg-zinc-900 border-zinc-800 text-white" value={matchState.currentScore} onChange={e => setMatchState({...matchState, currentScore: parseInt(e.target.value)})} />
                 </div>
+              </div>
+              <div className="space-y-2 pt-2">
+                <label className="text-zinc-400 text-sm flex justify-between">
+                  <span>Gemini API Key (Optional)</span>
+                  <span className="text-zinc-600 text-xs">BYOK Mode</span>
+                </label>
+                <Input 
+                  type="password" 
+                  placeholder="Paste your key to use your own quota..." 
+                  className="bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-700" 
+                  value={apiKey} 
+                  onChange={e => setApiKey(e.target.value)} 
+                />
               </div>
               <div className="pt-4">
                 <Button 
