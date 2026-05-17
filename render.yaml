@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: captain-cool-agent
+    env: node
+    rootDir: captain-cool-agent
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false # You will set this in the Render UI
